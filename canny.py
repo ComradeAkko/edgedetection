@@ -61,11 +61,6 @@ def kernel(size, sd):
         k1[i] = gauss(sd, i-center)
     
     k2 = np.outer(k1,k1)
-    print(k2)
-    print(np.sum(k2))
-    plt.axis("off")
-    plt.imshow(k2, cmap='gray')
-    plt.show()
     return k2
 
 # calculates the gaussian distribution for both 1d and 2d
