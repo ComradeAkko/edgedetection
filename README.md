@@ -27,13 +27,15 @@ More in detail blueprint:
 6. Converting weak pixels to strong if there is a strong pixel around it. (edge tracking by hysteresis)
 
 ## Technical Design
-Library to use:
+Libraries to use:
 - Matplotlib
+- Numpy
 
 Blueprint but techincal:
 1. Use ITU-R 601-2 luma transformation
 2. Implement gaussian filter from scratch
-3. 
+3. Utilize the sorbel operator to calculate gradient and direction
+4. 
 
 ## Technical Implementation
 
