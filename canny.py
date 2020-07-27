@@ -8,14 +8,16 @@ import sys
 import math
 import os
 
-SIZE = 21
+SIZE = 7
 
 def canny(imgPath):
     img = mpimg.imread(imgPath)
     gray = grayScale(img) # convert to grayscale
     gauss = gaussFilter(gray) # apply a gaussian filter
+    grad, dir = gradIntensity(gauss) # apply a sorbel filter and get gradient directions
+    
     plt.axis("off")
-    plt.imshow(gauss, cmap='gray')
+    plt.imshow(grad, cmap='gray')
     plt.show()
 
 # greyscales an matplotlib image by using ITU-R 601-2 luma transformation
@@ -30,9 +32,36 @@ def gaussFilter(img):
     # get the gaussian kernel and convolve it with the image
     return convolve(img, kernel(SIZE, math.sqrt(SIZE)))
 
-# utilize a sobel filter to find grid intensity
-def gradIntensity():
-    return False
+# utilizes a sobel filter to find grid intensity
+# implementation based on https://en.wikipedia.org/wiki/Sobel_operator 
+def gradIntensity(img):
+    # get the x and y kernals
+    xKernal = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    yKernal = np.array([[1, 2, 1], [0, 0, 0], [-1,-2,-1]])
+
+    # get convolved x and y images
+    Gx = convolve(img, xKernal)
+    Gy = convolve(img, yKernal)
+
+    # get the hypotenuse to find the intensity of the gradient
+    G = np.hypot(Gx,Gy)
+
+    # readjust pixel levels to the 0-255 scale for visibility
+    G = G/np.max(G) * 255
+
+    # get the arctan to find the direction of the gradient
+    theta = np.arctan2(Gy,Gx)
+    return G, theta
+
+# suppresses all non maximum gradients
+def nonMaxSuppression(img, dir):
+    imgRow, imgCol = img.shape
+    result = np.zeros(img.shape)
+
+    for i in range(imgRow):
+        for j in range(imgCol):
+            False
+    
 
 def convolve(img, filterArray):
     # get the dimensions of the image and the kernel
@@ -43,6 +72,20 @@ def convolve(img, filterArray):
     padImg = np.zeros((imgRow+fRow, imgCol+fCol))
     padImg[fRow//2:imgRow+fRow//2, fCol//2:imgCol+fCol//2] = img
 
+    # color in the padding pixels with the "generally closest" pixel colors so
+    # the borders don't get darkened when convolving at the edge
+    padImg[:fRow//2, :fCol//2] = img[0,0]
+    padImg[:fRow//2, imgCol+fCol//2:] = img[0,imgCol-1]
+    padImg[imgRow+fRow//2:,imgCol+fCol//2:] = img[imgRow-1,imgCol-1]
+    padImg[imgRow+fRow//2:, :fCol//2] = img[imgRow-1,0]
+
+    for i in range(imgRow):
+        padImg[fRow//2 + i, :fCol//2] = img[i,0]
+        padImg[fRow//2 + i, imgCol+fCol//2:] = img[i, imgCol-1]
+    for i in range(imgCol):
+        padImg[:fRow//2, i + fCol//2] = img[0, i]
+        padImg[imgRow+fRow//2:, i + fCol//2] = img[imgRow-1, i]
+
     # initialize the result img
     result = np.zeros((imgRow, imgCol))
 
@@ -52,6 +95,24 @@ def convolve(img, filterArray):
             result[i,j] = np.sum(filterArray * padImg[i:i+fRow, j:j+fCol])
 
     return result
+
+# determines the closest axis on a grid
+def gradDir(dir):
+    if 0 <= dir and dir <= math.pi/4:
+        if math.pi/4 - dir > math.pi/8:
+            return "NWSE"
+        else:
+            return "WE"
+    elif math.pi/4 <= dir and dir <= math.pi/2:
+        if math.pi/2 - dir > 3*math.pi/8:
+            return "NS"
+        else:
+            return "NWSE"
+    elif math.pi/2 <= dir and dir <= 4*math.pi/3:
+        if 4*math.pi/3 - dir > 5*math.pi/8:
+            return "SWNE"
+        else:
+            return "NS"
 
 # creates a gaussian kernel for later use in filtering
 def kernel(size, sd):
