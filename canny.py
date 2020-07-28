@@ -8,16 +8,18 @@ import sys
 import math
 import os
 
-SIZE = 7
+SIZE = 21
 
 def canny(imgPath):
     img = mpimg.imread(imgPath)
     gray = grayScale(img) # convert to grayscale
     gauss = gaussFilter(gray) # apply a gaussian filter
     grad, dir = gradIntensity(gauss) # apply a sorbel filter and get gradient directions
-    
+    nonMax = nonMaxSuppression(grad, dir) # suppress the non maximum gradients
+    doubleT = doubleThreshold(nonMax)
+    cannied = edgeTrack(doubleT)
     plt.axis("off")
-    plt.imshow(grad, cmap='gray')
+    plt.imshow(cannied, cmap='gray')
     plt.show()
 
 # greyscales an matplotlib image by using ITU-R 601-2 luma transformation
@@ -60,8 +62,72 @@ def nonMaxSuppression(img, dir):
 
     for i in range(imgRow):
         for j in range(imgCol):
-            False
+            # figure out the closest axis and set the directional neighbors
+
+            # West-East
+            if (-math.pi/8 < dir[i,j] <= math.pi/8) or (7*math.pi/8 < dir[i,j]) or (dir[i,j] <= -7*math.pi/8):
+                l = img[i, max(0, j-1)]
+                r = img[i, min(imgCol-1, j+1)]
+            
+            # Northwest-Southeast
+            elif (math.pi/8 < dir[i,j] <= 3*math.pi/8) or (-7*math.pi/8 < dir[i,j] <= -5*math.pi/8):
+                l = img[max(0, i-1), max(0, j-1)]
+                r = img[min(imgRow-1, i+1), min(imgCol-1, j+1)]
+
+            # North-South
+            elif (3*math.pi/8 < dir[i,j] <= 5*math.pi/8) or (-5*math.pi/8 < dir[i,j] <= -3*math.pi/8):
+                l = img[max(0, i-1), j]
+                r = img[min(imgRow-1, i+1), j]
+            
+            # Southwest - Northeast
+            else:
+                l = img[min(imgRow-1, i+1), max(0, j-1)]
+                r = img[max(0, i-1), min(imgCol-1, j+1)]
+            
+            # if the current pixel is greater than its directional neighbors, keep it
+            # otherwise, zero it out
+            if l <= img[i,j] and r <= img[i,j]:
+                result[i,j] = img[i,j]
+
+    return result
+
+# separate non-revelant and relevant pixels and then separate the relevant to strong and weak
+# implemented with guidance from http://justin-liang.com/tutorials/canny/#double-thresholding
+def doubleThreshold(img, low = 0.2, high = 0.2):
+    # set the high and low thresholds
+    highT = np.max(img) * high
+    lowT = highT * low
+
+    imgRow, imgCol = img.shape
+
+    # change non-revelant to black, weak to grey, strong to white
+    for i in range(imgRow):
+        for j in range(imgCol):
+            if img[i,j] < lowT:
+                img[i,j] = 0
+            elif img[i,j] < highT:
+                img[i,j] = 60
+            else:
+                img[i,j] = 255
     
+    return img
+
+# change all weak pixels that are next to strong pixels to strong and discard the rest
+# implemented with help from https://en.wikipedia.org/wiki/Canny_edge_detector 
+def edgeTrack(img):
+    imgRow, imgCol = img.shape
+
+    for i in range(imgRow):
+        for j in range(imgCol):
+            if img[i,j] == 60:
+                if ((img[i, max(0, j-1)] == 255) or (img[i, min(imgCol-1, j+1)] == 255)
+                or (img[max(0, i-1), max(0, j-1)] == 255) or (img[min(imgRow-1, i+1), min(imgCol-1, j+1)] == 255)
+                or (img[max(0, i-1), j] == 255) or (img[min(imgRow-1, i+1), j] == 255)
+                or (img[min(imgRow-1, i+1), max(0, j-1)] == 255) or (img[max(0, i-1), min(imgCol-1, j+1)] == 255)):
+                    img[i,j] = 255
+                else:
+                    img[i,j] = 0
+    return img
 
 def convolve(img, filterArray):
     # get the dimensions of the image and the kernel
@@ -95,24 +161,6 @@ def convolve(img, filterArray):
             result[i,j] = np.sum(filterArray * padImg[i:i+fRow, j:j+fCol])
 
     return result
-
-# determines the closest axis on a grid
-def gradDir(dir):
-    if 0 <= dir and dir <= math.pi/4:
-        if math.pi/4 - dir > math.pi/8:
-            return "NWSE"
-        else:
-            return "WE"
-    elif math.pi/4 <= dir and dir <= math.pi/2:
-        if math.pi/2 - dir > 3*math.pi/8:
-            return "NS"
-        else:
-            return "NWSE"
-    elif math.pi/2 <= dir and dir <= 4*math.pi/3:
-        if 4*math.pi/3 - dir > 5*math.pi/8:
-            return "SWNE"
-        else:
-            return "NS"
 
 # creates a gaussian kernel for later use in filtering
 def kernel(size, sd):

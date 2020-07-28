@@ -35,8 +35,8 @@ Blueprint but techincal:
 1. Use ITU-R 601-2 luma transformation
 2. Implement gaussian filter from scratch
 3. Utilize the sorbel operator to calculate gradient and direction
-4. 
-
-## Technical Implementation
+4. Classify the directions into 4 axises and then suppress the non-maximum gradients.
+5. Set a low and high threshold to classify remaining pixels into strong, weak and non-relevant
+6. Convert weak pixels to strong if there is a strong pixel around it, and zero out otherwise.
 
 
