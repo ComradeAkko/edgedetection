@@ -9,6 +9,8 @@ import math
 import os
 
 SIZE = 5
+HIGH = 0.2
+LOW = 0.2
 
 def canny(imgPath):
     img = mpimg.imread(imgPath)
@@ -93,7 +95,7 @@ def nonMaxSuppression(img, dir):
 
 # separate non-revelant and relevant pixels and then separate the relevant to strong and weak
 # implemented with guidance from http://justin-liang.com/tutorials/canny/#double-thresholding
-def doubleThreshold(img, low = 0.2, high = 0.2):
+def doubleThreshold(img, low = LOW, high = HIGH):
     # set the high and low thresholds
     highT = np.max(img) * high
     lowT = highT * low
