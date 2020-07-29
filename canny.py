@@ -8,7 +8,7 @@ import sys
 import math
 import os
 
-SIZE = 21
+SIZE = 5
 
 def canny(imgPath):
     img = mpimg.imread(imgPath)

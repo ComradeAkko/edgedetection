@@ -3,6 +3,12 @@ A beginner project to practice edge detection technology
 
 # Canny Method
 
+### Before 
+![Dorms in Oxford](test/smol_oxforddorm.jpg)
+
+### After
+![Edgy Oxford Dorms](results/oxfordedge.PNG)
+
 ## Overview
 Apparently its one of the most used forms of edge detection and it seems relatively straightforward so I'm going to try it out. It also results in very clear edges, so that's helpful. 
 
@@ -12,6 +18,7 @@ Why it's used according to wikipedia:
 3. Edge detected once is not detected twice (image noise doesn not create any false edges) 
 
 The amount of data appears to be minimized compared to other forms of edge detection so I will utilize this in preparation of other computer vision projects that require a degree of edge detection. 
+
 
 ## Conceptual Design
 Very oversimplified goal:
@@ -39,4 +46,18 @@ Blueprint but techincal:
 5. Set a low and high threshold to classify remaining pixels into strong, weak and non-relevant
 6. Convert weak pixels to strong if there is a strong pixel around it, and zero out otherwise.
 
+
+## Results
+### Large Versailles Flower image
+![Flowers in Versailles](test/versaillesflower.jpg)
+
+### Edgy Large Versailles Flower image with more blurring
+![Flowers in Versailles with size 5 kernel and 0.2 high and low thresholds](result/largeversaillesflower.PNG)
+
+### Edgy Large Versailles Flower image with less blurring
+![Flowers in Versailles with size 3 kernel and 0.175 high threshold and 0.05 low thresholds](result/largeversaillesflower1.PNG)
+
+- Using a smalli-ish image size (600x400) small gaussian kernel generally results in a stronger and extensive line detection. 
+- However as image sizes get larger, image detection starts failing and only spots and outlines can be detected. 
+- Furthermore, lower thresholds for strogness results in more extensive line detection.
 
