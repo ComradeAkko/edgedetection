@@ -68,10 +68,10 @@ Blueprint but techincal:
 ### Large Versailles Flower image
 ![Flowers in Versailles](test/versaillesflower.jpg)
 
-### Edgy Large Versailles Flower image with more blurring (kernel = 5, high:low thres = 0.2:0.2)
+### Edgy Large Versailles Flower image with more blurring (kernel = 5, high:low thres = 0.2 : 0.2)
 ![Flowers in Versailles with size 5 kernel and 0.2 high and low thresholds](results/largeversaillesflower.PNG)
 
-### Edgy Large Versailles Flower image with less blurring (kernel = 3, high:low thres = 0.175:0.03)
+### Edgy Large Versailles Flower image with less blurring (kernel = 3, high:low thres = 0.175 : 0.03)
 ![Flowers in Versailles with size 3 kernel and 0.175 high threshold and 0.05 low thresholds](results/largeversaillesflower1.PNG)
 
 - Using a smalli-ish image size (600x400) small gaussian kernel generally results in a stronger and extensive line detection. 
@@ -80,5 +80,5 @@ Blueprint but techincal:
 - Also a more visually messy picture ends up with a lot of stray edges getting captured as well as seen below:
 
 ### Small Versailles Flower (kernel = 5)
-![Flowers in Versailles, smaller version](test/smol_versaillesflower.jpg)
+![Flowers in Versailles, smaller version](results/versaillesedge.PNG)
 
